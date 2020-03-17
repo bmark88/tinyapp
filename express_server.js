@@ -1,11 +1,25 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const bodyParser = require("body-parser");
+
+function generateRandomString() {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+  let random = '';
+  
+  for (let i = 0; i < chars.length; i++) {
+    if (random.length < 6) {
+      random += chars[(Math.random()*chars.length).toFixed(0)]
+    }
+  }
+  return random;
+}
+
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('view engine', 'ejs');
 
@@ -38,4 +52,10 @@ app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[shortURL] };
   res.render("urls_show", templateVars);
+});
+
+app.post('/urls', (req, res) => {
+  
+  console.log(req.body);
+  res.send('Ok');
 });

@@ -7,7 +7,7 @@ const urlDatabase = {
 };
 const bodyParser = require("body-parser");
 
-function generateRandomString() {
+const generateRandomString = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   let random = '';
   
@@ -55,7 +55,13 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);
   
-  console.log(req.body);
-  res.send('Ok');
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });

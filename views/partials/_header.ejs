@@ -12,7 +12,7 @@
       </div>
     </div>
     <div>
-      <% if(!username) { %>
+      <% if(!user) { %>
       <form method="POST" action="/login" id="login">
         <input name="username" placeholder="Username" class="form-control round"
           style="margin-right: 10px; width: 200px" />
@@ -23,8 +23,7 @@
     </div>
     <% } else {%>
     <form method="POST" action="/logout">
-      Logged In As: <%= username%>!<button type="submit" class="btn btn-outline-dark"
-        style="margin-left: 15px">Logout</button>
+      Logged In As: <%= user.email %>!<button type="submit" class="btn btn-outline-dark" style="margin-left: 15px">Logout</button>
     </form>
     <% } %>
   </nav>

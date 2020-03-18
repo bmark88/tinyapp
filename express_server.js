@@ -112,3 +112,14 @@ app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
 });
+
+app.get('/register', (req, res) => {
+  let templateVars = {
+    username: req.cookies.username ? req.cookies.username : null
+  };
+  res.render("urls_register", templateVars);
+});
+
+// app.post('/register', (req, res) => {
+//   res.redirect('/register');
+// });

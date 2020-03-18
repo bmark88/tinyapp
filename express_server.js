@@ -6,12 +6,23 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// const users = {
-//   "hello": {
-//     username: 'hello',
-//     password: 'password'
-//   }
-// };
+const users = { 
+  // user1: {
+  //   email: null,
+  //   password: null
+  // }
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
@@ -99,7 +110,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/login", (req, res) => {
   let username = req.body.username;
-
+  
   if (username) {
     res.cookie('username', username);
     res.redirect('/urls');
@@ -120,6 +131,20 @@ app.get('/register', (req, res) => {
   res.render("urls_register", templateVars);
 });
 
-// app.post('/register', (req, res) => {
-//   res.redirect('/register');
-// });
+app.post('/register', (req, res) => {
+  const user = {
+      id: "randomID3",
+      email: req.body.email,
+      password: req.body.password
+  };
+
+  for (let id in users) {
+    if (req.body.email === users[id].email) {
+      console.log("Email already exists");
+    } else {
+      users["randomID3"] = user;
+      res.redirect('/urls');
+    }
+    // console.log(users);
+  }
+});

@@ -27,8 +27,9 @@
       <tbody>
         <% for(let url in urls) { %>
         <tr>
+          
           <td><%= url %></td>
-          <td><%= urls[url] %></td>
+          <td><%= urlDatabase[url].longURL %></td>
           <td>
             <form method="GET" action="/urls/<%= url %>"><button type="input"
                 class="btn btn-outline-primary">Edit</button></form>

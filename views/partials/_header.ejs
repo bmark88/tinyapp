@@ -13,16 +13,16 @@
     </div>
     <div>
       <% if(!user) { %>
-      <form method="POST" action="/login" id="login">
+      <!-- <form method="POST" action="/login" id="login">
         <input name="username" placeholder="Username" class="form-control round"
           style="margin-right: 10px; width: 200px" />
       </form>
     </div>
     <div>
       <button form="login" type="submit" class="btn btn-outline-dark">Login</button>
-    </div>
+    </div> -->
     <% } else {%>
-    <form method="POST" action="/logout">
+      </div>
       Logged In As: <%= user.email %>!<button type="submit" class="btn btn-outline-dark" style="margin-left: 15px">Logout</button>
     </form>
     <% } %>

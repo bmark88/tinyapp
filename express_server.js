@@ -65,6 +65,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user
   };
+
   res.render("urls_index", templateVars);
 });
 
@@ -147,13 +148,32 @@ app.post('/register', (req, res) => {
       password: req.body.password
   };
 
-  for (let id in users) {
-    if (req.body.email === users[id].email) {
-      console.log("Email already exists");
-    } else {
-      users[randomID] = user;
-      res.cookie('user_id', randomID);
-      res.redirect('/urls');
-    }
+    for (let id in users) {
+      if (req.body.email === "") {
+        res.sendStatus(400);
+        return
+      } else if (req.body.email === users[id].email) {
+      res.sendStatus(400);
+      return
+    } 
   }
+
+  users[randomID] = user;
+  res.cookie('user_id', randomID);
+  res.redirect('/urls');
+});
+
+app.get('/login', (req, res) => {
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+
+  let templateVars = {
+    user
+  };
+
+  res.render("urls_login", templateVars);
+});
+
+app.post('/login', (req, res) => {
+  // Do something
 });

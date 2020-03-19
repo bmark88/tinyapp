@@ -12,18 +12,12 @@
       </div>
     </div>
     <div>
-      <% if(!username) { %>
-      <form method="POST" action="/login" id="login">
-        <input name="username" placeholder="Username" class="form-control round"
-          style="margin-right: 10px; width: 200px" />
-      </form>
-    </div>
-    <div>
-      <button form="login" type="submit" class="btn btn-outline-dark">Login</button>
-    </div>
+      <% if(!user) { %>
+      <!-- DISPLAY NOTHING IF NO USER IS LOGGED IN -->
     <% } else {%>
+    </div>
     <form method="POST" action="/logout">
-      Logged In As: <%= username%>!<button type="submit" class="btn btn-outline-dark"
+      Logged In As: <%= user.email %>!<button type="submit" class="btn btn-outline-dark"
         style="margin-left: 15px">Logout</button>
     </form>
     <% } %>

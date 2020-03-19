@@ -22,6 +22,7 @@ const users = {
 
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const generateRandomString = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
@@ -165,10 +166,14 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   for (let id in users) {
-    if (uselessEmailChecker(users[id].email, req.body.email) && users[id].password === req.body.password) {
+      if (uselessEmailChecker(users[id].email, req.body.email) && bcrypt.compareSync(password, hashedPassword)) {
       res.cookie('user_id', users[id].id);
       res.redirect('/urls');
+      return
     }
   }
 
@@ -193,10 +198,12 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
   const randomID = generateRandomString();
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const user = {
     id: randomID,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword
   };
 
   for (let id in users) {

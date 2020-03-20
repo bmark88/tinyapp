@@ -11,40 +11,48 @@
 <body>
   <%- include('partials/_header') %>
   <div>
-  <div class="card text-center">
-    <div class="card-header"></div>
-    <div class="card-body">
-      <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-      <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-      <div><p> Total number of views: <%= viewCount %> </p></div>
-      <div><p> Total number of unique visitors: <%= uniqueCount %> </p></div>
-      <div style="margin-top: 50px">
-        <h2 class="card-title text-secondary">Edit</h2>
-        <form method="POST" action="/urls/<%= shortURL %>">
-          <p class="card-text">New URL:<input type="text" value="http://" name="input"><button type="submit"
-              class="btn btn-primary">Submit</button></input></p>
-        </form>
+    <div class="card text-center">
+      <div class="card-header"></div>
+      <div class="card-body">
+        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <div>
+          <p> Total number of views: <%= viewCount %> </p>
+        </div>
+        <div>
+          <p> Total number of unique visitors: <%= uniqueCount %> </p>
+        </div>
+        <div style="margin-top: 50px">
+          <h2 class="card-title text-secondary">Edit</h2>
+          <form method="POST" action="/urls/<%= shortURL %>?_method=PUT">
+            <p class="card-text">New URL:<input type="text" value="http://" name="input"><button type="submit"
+                class="btn btn-primary">Submit</button></input></p>
+          </form>
+        </div>
       </div>
+      <div class="card-footer text-muted"></div>
     </div>
-    <div class="card-footer text-muted"></div>
   </div>
-</div>
-<div>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Visitor ID</th>
-        <th scope="col">Timestamp</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><%= visitorDetails.visitorID.join(' _\n_ ') %></td>
-        <td><%= visitorDetails.timeStamp.join(' _\n_ ') %></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+  <div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Visitor ID</th>
+          <th scope="col">Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% let index = -1; %>
+        <% for (let visitor in visitorDetails.visitorID) { %>
+        <% index++; %>
+        <tr>
+          <td><%= visitorDetails.visitorID[index] %></td>
+          <td><%= visitorDetails.timeStamp[index] %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">

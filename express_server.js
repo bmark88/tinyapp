@@ -1,12 +1,12 @@
 const cookieSession = require('cookie-session');
 const express = require("express");
+const methodOverride = require('method-override');
 const app = express();
 const PORT = 8080; // default port 8080
-const { getUserByEmail, generateRandomString } = require('./helpers');
-const visitorDetails = {
-  visitorID: [],
-  timeStamp: []
-}
+const {
+  getUserByEmail,
+  generateRandomString
+} = require('./helpers');
 
 const urlDatabase = {
   "b2xVn2": {
@@ -60,11 +60,14 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+app.use(methodOverride('_method'));
+
 app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
   res.redirect('/login');
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -120,7 +123,7 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     viewCount: urlDatabase[req.params.shortURL].viewCount,
     uniqueCount: urlDatabase[req.params.shortURL].uniqueCount,
-    visitorDetails,
+    visitorDetails: urlDatabase[req.params.shortURL].visitorDetails,
     user
   };
 
@@ -138,7 +141,11 @@ app.post('/urls', (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.user_id,
     viewCount: 0,
-    uniqueCount: 0
+    uniqueCount: 0,
+    visitorDetails: {
+      visitorID: [],
+      timeStamp: []
+    }
   };
 
   res.redirect(`/urls/${shortURL}`);
@@ -153,29 +160,33 @@ app.get("/u/:shortURL", (req, res) => {
     req.session.uniqueID = generateRandomString();
 
     //add to unique user count
-    urlDatabase[req.params.shortURL].uniqueCount++
+    urlDatabase[req.params.shortURL].uniqueCount++;
   }
 
   if ((longURL.slice(0, 7)) === 'http://') {
     urlDatabase.viewCount++;
 
     //data for the time stamps stretch work
-    visitorDetails.visitorID.push(req.session.uniqueID);
-    visitorDetails.timeStamp.push(Date());
+    urlDatabase[req.params.shortURL].visitorDetails.visitorID.push(req.session.uniqueID);
+    urlDatabase[req.params.shortURL].visitorDetails.timeStamp.push(Date());
 
     res.redirect(longURL);
   } else {
     urlDatabase.viewCount++;
 
     //data for the time stamps stretch work
-    visitorDetails.visitorID.push(req.session.uniqueID);
-    visitorDetails.timeStamp.push(Date());
+    urlDatabase[req.params.shortURL].visitorDetails.visitorID.push(req.session.uniqueID);
+    urlDatabase[req.params.shortURL].visitorDetails.timeStamp.push(Date());
+
+      if ((longURL.slice(0, 8)) === 'https://') {
+        res.redirect(longURL)
+      }
 
     res.redirect('http://' + longURL);
   }
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
 
@@ -190,7 +201,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.input;
   urlDatabase[req.params.shortURL].uniqueCount = 0;
 

@@ -2,7 +2,7 @@ const cookieSession = require('cookie-session');
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const { uselessEmailChecker } = require('./helpers');
+const { getUserByEmail, generateRandomString } = require('./helpers');
 
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "aJ481W"} ,
@@ -25,24 +25,24 @@ const users = {
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 
-const generateRandomString = () => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-  let random = '';
+// const generateRandomString = () => {
+//   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+//   let random = '';
 
-  for (let i = 0; i < chars.length; i++) {
-    if (random.length < 6) {
-      random += chars[(Math.random() * chars.length).toFixed(0)];
-    }
-  }
-  return random;
-};
+//   for (let i = 0; i < chars.length; i++) {
+//     if (random.length < 6) {
+//       random += chars[(Math.random() * chars.length).toFixed(0)];
+//     }
+//   }
+//   return random;
+// };
 
 const urlsForUser = (id) => {
   const urlsForUser = {};
 
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
-      urlsForUser[url] = urlDatabase[url];    
+      urlsForUser[url] = urlDatabase[url];
     }
   }
 
@@ -110,7 +110,6 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
   const userID = req.session.user_id;
   const user = users[userID];
 
@@ -154,7 +153,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
   if (userID === urlDatabase[req.params.shortURL].userID) {
     delete urlDatabase[req.params.shortURL];
-  } 
+  }
 
   res.redirect('/urls');
 });
@@ -166,7 +165,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const user = uselessEmailChecker(email, users)
+  const user = getUserByEmail(email, users);
   
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Incorrect email or password!");
@@ -201,8 +200,8 @@ app.post('/register', (req, res) => {
   }
 
   // check to see if the email is already in use
-  if(uselessEmailChecker(req.body.email, users)) {
-    res.status(400).send("Email is already in use!");
+  if (getUserByEmail(req.body.email, users)) {
+    return res.status(400).send("Email is already in use!");
   }
 
   const user_id = generateRandomString();

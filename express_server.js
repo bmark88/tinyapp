@@ -25,18 +25,6 @@ const users = {
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 
-// const generateRandomString = () => {
-//   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-//   let random = '';
-
-//   for (let i = 0; i < chars.length; i++) {
-//     if (random.length < 6) {
-//       random += chars[(Math.random() * chars.length).toFixed(0)];
-//     }
-//   }
-//   return random;
-// };
-
 const urlsForUser = (id) => {
   const urlsForUser = {};
 
@@ -61,7 +49,7 @@ app.use(bodyParser.urlencoded({
 app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/login');
 });
 
 app.listen(PORT, () => {
@@ -140,7 +128,11 @@ app.post('/urls', (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
 
-  res.redirect(longURL);
+  if ((longURL.slice(0,7)) === 'http://') {
+    res.redirect(longURL);
+  } else {
+    res.redirect('http://' + longURL);
+  }
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -160,6 +152,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.input;
+
   res.redirect('/urls');
 });
 
@@ -196,7 +189,7 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
 
   if (!email || !password) {
-    res.status(400).send("Please enter both the email and password!");
+    return res.status(400).send("Please enter both the email and password!");
   }
 
   // check to see if the email is already in use

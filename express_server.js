@@ -3,10 +3,24 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const { getUserByEmail, generateRandomString } = require('./helpers');
+const visitorDetails = {
+  visitorID: [],
+  timeStamp: []
+}
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "aJ481W"} ,
-  "9sm5xK": { longURL: "http://www.google.com", userID: "aJ481W" }
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "aJ481W",
+    viewCount: 0,
+    uniqueCount: 0
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "aJ481W",
+    viewCount: 0,
+    uniqueCount: 0
+  }
 };
 
 const users = {
@@ -104,6 +118,9 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
+    viewCount: urlDatabase[req.params.shortURL].viewCount,
+    uniqueCount: urlDatabase[req.params.shortURL].uniqueCount,
+    visitorDetails,
     user
   };
 
@@ -119,7 +136,9 @@ app.post('/urls', (req, res) => {
 
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: req.session.user_id,
+    viewCount: 0,
+    uniqueCount: 0
   };
 
   res.redirect(`/urls/${shortURL}`);
@@ -127,10 +146,31 @@ app.post('/urls', (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
+  urlDatabase[req.params.shortURL].viewCount++;
 
-  if ((longURL.slice(0,7)) === 'http://') {
+  // if a session cookie uniqueID doesn't exist yet, create one
+  if (!req.session.uniqueID) {
+    req.session.uniqueID = generateRandomString();
+
+    //add to unique user count
+    urlDatabase[req.params.shortURL].uniqueCount++
+  }
+
+  if ((longURL.slice(0, 7)) === 'http://') {
+    urlDatabase.viewCount++;
+
+    //data for the time stamps stretch work
+    visitorDetails.visitorID.push(req.session.uniqueID);
+    visitorDetails.timeStamp.push(Date());
+
     res.redirect(longURL);
   } else {
+    urlDatabase.viewCount++;
+
+    //data for the time stamps stretch work
+    visitorDetails.visitorID.push(req.session.uniqueID);
+    visitorDetails.timeStamp.push(Date());
+
     res.redirect('http://' + longURL);
   }
 });
@@ -152,14 +192,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.input;
+  urlDatabase[req.params.shortURL].uniqueCount = 0;
 
   res.redirect('/urls');
 });
 
 app.post("/login", (req, res) => {
-  const { email, password } = req.body;
+  const {
+    email,
+    password
+  } = req.body;
   const user = getUserByEmail(email, users);
-  
+
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Incorrect email or password!");
   }

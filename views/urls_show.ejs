@@ -15,7 +15,9 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text">Short URL:
+          <a href="/u/<%= shortURL %>"><%= shortURL %></a>
+        </p>
         <div>
           <p> Total number of views: <%= viewCount %> </p>
         </div>
@@ -25,8 +27,14 @@
         <div style="margin-top: 50px">
           <h2 class="card-title text-secondary">Edit</h2>
           <form method="POST" action="/urls/<%= shortURL %>?_method=PUT">
-            <p class="card-text">New URL:<input type="text" value="http://" name="input"><button type="submit"
-                class="btn btn-primary">Submit</button></input></p>
+            <p class="card-text">
+              New URL:
+              <input type="text" value="http://" name="input">
+              <button type="submit" class="btn btn-primary">
+                Submit
+              </button>
+              </input>
+            </p>
           </form>
         </div>
       </div>

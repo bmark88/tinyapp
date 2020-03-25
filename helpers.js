@@ -19,4 +19,36 @@ const generateRandomString = () => {
   return random;
 };
 
-module.exports = { getUserByEmail, generateRandomString };
+const urlsForUser = (id, database) => {
+  const urlsForUser = {};
+
+  for (let url in database) {
+    if (database[url].userID === id) {
+      urlsForUser[url] = database[url];
+    }
+  }
+
+  return urlsForUser;
+};
+
+const checkForHTTP = (longURL, database, sessionID, visitorID, timeStamp) => {
+  // add total view count, unique view count, and time stamp for stretch work
+
+
+  // check if longURL includes http:// or https://
+  if ((longURL.slice(0, 7)) === 'http://' || (longURL.slice(0, 8)) === 'https://') {
+    database.viewCount++;
+    visitorID.push(sessionID);
+    timeStamp.push(Date());
+    return true;
+  }
+
+  return false;
+};
+
+module.exports = {
+  getUserByEmail,
+  generateRandomString,
+  urlsForUser,
+  checkForHTTP
+};

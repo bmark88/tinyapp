@@ -5,7 +5,9 @@ const app = express();
 const PORT = 8080; // default port 8080
 const {
   getUserByEmail,
-  generateRandomString
+  generateRandomString,
+  urlsForUser,
+  checkForHTTP
 } = require('./helpers');
 
 const urlDatabase = {
@@ -39,18 +41,6 @@ const users = {
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 
-const urlsForUser = (id) => {
-  const urlsForUser = {};
-
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      urlsForUser[url] = urlDatabase[url];
-    }
-  }
-
-  return urlsForUser;
-};
-
 app.use(cookieSession({
   name: "session",
   keys: ["user_id"]
@@ -65,12 +55,7 @@ app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
-  res.redirect('/login');
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  return res.redirect('/login');
 });
 
 app.get("/urls.json", (req, res) => {
@@ -86,11 +71,11 @@ app.get("/urls", (req, res) => {
   const user = users[userID];
 
   if (!user) {
-    res.redirect('/login');
+    return res.redirect('/login');
   }
-  const checkURLS = urlsForUser(user.id);
+  const checkURLS = urlsForUser(user.id, urlDatabase);
 
-  let templateVars = {
+  const templateVars = {
     urls: checkURLS,
     urlDatabase,
     user
@@ -103,35 +88,15 @@ app.get("/urls/new", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
 
-  let templateVars = {
+  const templateVars = {
     user
   };
 
   if (!user) {
-    res.redirect('/login');
+    return res.redirect('/login');
   }
 
   res.render("urls_new", templateVars);
-});
-
-app.get('/urls/:shortURL', (req, res) => {
-  const userID = req.session.user_id;
-  const user = users[userID];
-
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    viewCount: urlDatabase[req.params.shortURL].viewCount,
-    uniqueCount: urlDatabase[req.params.shortURL].uniqueCount,
-    visitorDetails: urlDatabase[req.params.shortURL].visitorDetails,
-    user
-  };
-
-  if (!user) {
-    res.redirect('/login');
-  }
-
-  res.render("urls_show", templateVars);
 });
 
 app.post('/urls', (req, res) => {
@@ -148,42 +113,53 @@ app.post('/urls', (req, res) => {
     }
   };
 
-  res.redirect(`/urls/${shortURL}`);
+  return res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
-  urlDatabase[req.params.shortURL].viewCount++;
+  const shortURL = urlDatabase[req.params.shortURL];
+  const visitorID = shortURL.visitorDetails.visitorID;
+  const timeStamp = shortURL.visitorDetails.timeStamp;
+  shortURL.viewCount++;
 
   // if a session cookie uniqueID doesn't exist yet, create one
   if (!req.session.uniqueID) {
     req.session.uniqueID = generateRandomString();
 
-    //add to unique user count
-    urlDatabase[req.params.shortURL].uniqueCount++;
+    shortURL.uniqueCount++;
   }
 
-  if ((longURL.slice(0, 7)) === 'http://') {
-    urlDatabase.viewCount++;
-
-    //data for the time stamps stretch work
-    urlDatabase[req.params.shortURL].visitorDetails.visitorID.push(req.session.uniqueID);
-    urlDatabase[req.params.shortURL].visitorDetails.timeStamp.push(Date());
-
-    res.redirect(longURL);
-  } else {
-    urlDatabase.viewCount++;
-
-    //data for the time stamps stretch work
-    urlDatabase[req.params.shortURL].visitorDetails.visitorID.push(req.session.uniqueID);
-    urlDatabase[req.params.shortURL].visitorDetails.timeStamp.push(Date());
-
-      if ((longURL.slice(0, 8)) === 'https://') {
-        res.redirect(longURL)
-      }
-
-    res.redirect('http://' + longURL);
+  // checks if url has http:// or https://
+  if (checkForHTTP(longURL, urlDatabase, req.session.uniqueID, visitorID, timeStamp)) {
+    return res.redirect(longURL);
   }
+
+  return res.redirect('http://' + longURL);
+});
+
+app.get('/urls/:shortURL', (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
+  const shortURL = urlDatabase[req.params.shortURL];
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: shortURL.longURL,
+    viewCount: shortURL.viewCount,
+    uniqueCount: shortURL.uniqueCount,
+    visitorDetails: shortURL.visitorDetails,
+    user
+  };
+
+  if (!user) {
+    res.redirect('/login');
+
+    // validates userID authority to access a given shortURL
+  } else if (userID !== shortURL.userID) {
+    return res.status(403).send("You do not have access to this!");
+  }
+
+  res.render("urls_show", templateVars);
 });
 
 app.delete("/urls/:shortURL", (req, res) => {
@@ -191,21 +167,21 @@ app.delete("/urls/:shortURL", (req, res) => {
   const user = users[userID];
 
   if (!user) {
-    res.redirect('/login');
+    return res.redirect('/login');
   }
 
   if (userID === urlDatabase[req.params.shortURL].userID) {
     delete urlDatabase[req.params.shortURL];
   }
 
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.put("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.input;
   urlDatabase[req.params.shortURL].uniqueCount = 0;
 
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.post("/login", (req, res) => {
@@ -220,19 +196,18 @@ app.post("/login", (req, res) => {
   }
 
   req.session.user_id = user.id;
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
   res.clearCookie('session');
-  res.redirect('/login');
+  return res.redirect('/login');
 });
 
 app.get('/register', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
-
-  let templateVars = {
+  const templateVars = {
     user
   };
 
@@ -262,16 +237,20 @@ app.post('/register', (req, res) => {
 
   users[user_id] = user;
   req.session.user_id = user_id;
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.get('/login', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
 
-  let templateVars = {
+  const templateVars = {
     user
   };
 
   res.render("urls_login", templateVars);
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });

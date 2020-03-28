@@ -34,7 +34,6 @@ const urlsForUser = (id, database) => {
 const checkForHTTP = (longURL, database, sessionID, visitorID, timeStamp) => {
   // add total view count, unique view count, and time stamp for stretch work
 
-
   // check if longURL includes http:// or https://
   if ((longURL.slice(0, 7)) === 'http://' || (longURL.slice(0, 8)) === 'https://') {
     database.viewCount++;

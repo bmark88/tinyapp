@@ -113,6 +113,8 @@ app.post('/urls', (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  const userID = req.session.user_id;
+  const user = users[userID];
   const longURL = urlDatabase[req.params.shortURL].longURL;
   const shortURL = urlDatabase[req.params.shortURL];
   const visitorID = shortURL.visitorDetails.visitorID;
@@ -124,6 +126,14 @@ app.get("/u/:shortURL", (req, res) => {
     req.session.uniqueID = generateRandomString();
 
     shortURL.uniqueCount++;
+  }
+
+  if (!user) {
+    return res.redirect('/login');
+
+    // validates userID authority to access a given shortURL
+  } else if (userID !== shortURL.userID) {
+    return res.status(403).send("You do not have access to this!");
   }
 
   // checks if url has http:// or https://
@@ -148,7 +158,7 @@ app.get('/urls/:shortURL', (req, res) => {
   };
 
   if (!user) {
-    res.redirect('/login');
+    return res.redirect('/login');
 
     // validates userID authority to access a given shortURL
   } else if (userID !== shortURL.userID) {

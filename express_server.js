@@ -121,17 +121,20 @@ app.get("/u/:shortURL", (req, res) => {
   const timeStamp = shortURL.visitorDetails.timeStamp;
   shortURL.viewCount++;
 
+  // add +1 to unique count if a new unique user visits the url
+  if(!shortURL.visitorDetails.visitorID.includes(req.session.uniqueID)) {
+    shortURL.uniqueCount++;
+  }
+
   // if a session cookie uniqueID doesn't exist yet, create one
   if (!req.session.uniqueID) {
     req.session.uniqueID = generateRandomString();
-
-    shortURL.uniqueCount++;
   }
 
   if (!user) {
     return res.redirect('/login');
 
-    // validates userID authority to access a given shortURL
+  // validates userID authority to access a given shortURL
   } else if (userID !== shortURL.userID) {
     return res.status(403).send("You do not have access to this!");
   }

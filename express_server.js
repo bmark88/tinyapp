@@ -131,14 +131,6 @@ app.get("/u/:shortURL", (req, res) => {
     req.session.uniqueID = generateRandomString();
   }
 
-  if (!user) {
-    return res.redirect('/login');
-
-  // validates userID authority to access a given shortURL
-  } else if (userID !== shortURL.userID) {
-    return res.status(403).send("You do not have access to this!");
-  }
-
   // checks if url has http:// or https://
   if (checkForHTTP(longURL, urlDatabase, req.session.uniqueID, visitorID, timeStamp)) {
     return res.redirect(longURL);

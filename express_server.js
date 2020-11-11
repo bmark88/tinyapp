@@ -2,7 +2,7 @@ const cookieSession = require('cookie-session');
 const express = require("express");
 const methodOverride = require('method-override');
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = process.env.PORT || 3000; // default port 3000
 const {
   getUserByEmail,
   generateRandomString,

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "12.x",
+    "npm": "6.x"
+  },
   "scripts": {
     "start": "./node_modules/.bin/nodemon -L express_server.js",
     "test": "./node_modules/mocha/bin/mocha"

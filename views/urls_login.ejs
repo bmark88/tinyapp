@@ -33,10 +33,14 @@
       <div 
         class="collapse navbar-collapse" 
         id="navbarNavAltMarkup">
-          <div 
-            class="navbar-nav">
+          <div class="navbar-nav">
+            <% if(!user) { %>
               <a class="nav-item nav-link" href="/login">Login</a>
               <a class="nav-item nav-link" href="/register">Register</a>
+            <% } else {%>
+              <a class="nav-item nav-link" href="/urls">My URLs</a>
+              <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+            <% } %>
           </div>
       </div>
       <div>
@@ -46,7 +50,7 @@
         <form 
           method="POST" 
           action="/logout">
-          Logged In As: <%= user.email %>!
+          Logged In As: <%= user.email %>
             <button 
               type="submit" 
               class="btn btn-outline-dark"
@@ -59,7 +63,11 @@
   </header>
 
   <main style="margin: 1em;">
+    <% if(!user) { %>
     <h3>Login</h3>
+    <% } else {%>
+    <h3>Login with a different account</h3>
+    <% } %>
     <form 
       class="form-inline" 
       action="/login" 

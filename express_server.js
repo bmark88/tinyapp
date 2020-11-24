@@ -115,6 +115,11 @@ app.post('/urls', (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
+
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.send('This URL does not exist.');
+  }
+
   const longURL = urlDatabase[req.params.shortURL].longURL;
   const shortURL = urlDatabase[req.params.shortURL];
   const visitorID = shortURL.visitorDetails.visitorID;
@@ -142,6 +147,11 @@ app.get("/u/:shortURL", (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
+
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.send('This URL does not exist.');
+  }
+
   const shortURL = urlDatabase[req.params.shortURL];
   const templateVars = {
     shortURL: req.params.shortURL,
